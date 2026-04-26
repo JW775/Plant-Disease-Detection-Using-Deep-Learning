@@ -10,7 +10,7 @@ This is a deep learning-based project for plant leaf disease recognition, which 
  - **Team Collaboration Friendly**: Separates training, prediction, and Web service code with a clear structure for easy maintenance and extension.
 ---
 ## Tech Stack
-- **Program Language**: Python 3.8+
+- **Program Language**: Python 3.9+
 - **Deep Learning Framework**: Flask
 - **Core Dependencies**: torch, torchvision, numpy, pandas, opencv-python, pillow, flask
 ----
@@ -24,15 +24,15 @@ cd Plant-Disease-Detection-Using-Deep-learning
 ```
 2. Create a virtual environment
 ```bash
-conda create -n plant_env python = 3.8
+conda create -n plant_env python = 3.9
 ```
 Windows:
 ```bash
-conda active plant_env
+conda activate plant_env
 ```
 Mac / Linux
 ```bash
-conda active plant_env
+conda activate plant_env
 ```
 3. Install dependencies
 ```bash
