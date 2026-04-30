@@ -26,9 +26,14 @@ python-dateutil==2.9.0.post0
 pytz==2026.1.post1
 six==1.17.0
 sympy==1.13.1
+seaborn==0.13.2
+scikit-learn==1.6.1
 torch==2.6.0+cu124
 torchvision==0.21.0+cu124
 typing_extensions==4.15.0
 tzdata==2026.1
+torchsummary==1.5.1
 Werkzeug==3.1.8
 zipp==3.23.1
+seaborn==0.13.2
+

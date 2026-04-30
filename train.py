@@ -4,17 +4,17 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
 from torchvision import datasets, transforms, models
 import matplotlib
-matplotlib.use('Agg')   # 强制使用非交互式后端，彻底解决你的保存报错
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.pyplot as plt
 import os
 from sklearn.metrics import classification_report, confusion_matrix
 import seaborn as sns
 
-# -------------------- 数据路径（你的实际情况）--------------------
+# data path
 DATA_PATH = r'C:\trian\trian'
 
-# -------------------- 1. 数据预处理 --------------------
+# preprocess data
 train_transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.RandomHorizontalFlip(),
@@ -31,29 +31,29 @@ val_transform = transforms.Compose([
                          std=[0.229, 0.224, 0.225])
 ])
 
-# -------------------- 2. 加载数据 --------------------
-print("📂 正在读取数据...")
+# load data
+print(" loading data...")
 
 full_dataset = datasets.ImageFolder(DATA_PATH,
                                      transform=train_transform)
 
-# 80% 训练，20% 验证
+# 80% training and 20% validation
 train_size = int(0.8 * len(full_dataset))
 val_size = len(full_dataset) - train_size
 train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size])
 
-# 验证集换回不带增强的 transform
+# turn to the validation(without augmentation)
 val_dataset.dataset.transform = val_transform
 
 class_names = full_dataset.classes
 num_classes = len(class_names)
-print(f"✅ 检测到 {num_classes} 个类别: {class_names}")
+print(f" found {num_classes} classes: {class_names}")
 
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False)
 
-# -------------------- 3. 构建模型 --------------------
-print("🧠 正在加载预训练模型 ResNet18...")
+# build model
+print(" loading ResNet18...")
 model = models.resnet18(weights='ResNet18_Weights.DEFAULT')
 
 for param in model.parameters():
@@ -61,7 +61,7 @@ for param in model.parameters():
 
 model.fc = nn.Linear(model.fc.in_features, num_classes)
 
-# -------------------- 4. 训练配置 --------------------
+# training configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = model.to(device)
 
@@ -70,13 +70,13 @@ optimizer = optim.Adam(model.fc.parameters(), lr=0.001)
 
 EPOCHS = 10
 
-# -------------------- 5. 训练循环 --------------------
-print("🚀 开始训练...")
+# training loop
+print("starting training...")
 train_losses = []
 val_accuracies = []
 
 for epoch in range(1, EPOCHS + 1):
-    # ---- 训练 ----
+    # training
     model.train()
     running_loss = 0.0
     for images, labels in train_loader:
@@ -93,7 +93,7 @@ for epoch in range(1, EPOCHS + 1):
     avg_loss = running_loss / len(train_loader)
     train_losses.append(avg_loss)
 
-    # ---- 验证 ----
+    # validation
     model.eval()
     correct = 0
     total = 0
@@ -112,10 +112,10 @@ for epoch in range(1, EPOCHS + 1):
           f"Loss: {avg_loss:.4f}  "
           f"Val Accuracy: {val_acc:.2f}%")
 
-print("🎉 训练完成！")
+print("completed model training")
 
-# -------------------- 6. 分类报告和混淆矩阵 --------------------
-print("\n📊 正在生成分类报告...")
+# generate report
+print("\ngenerating report...")
 
 model.eval()
 all_preds = []
@@ -130,7 +130,7 @@ with torch.no_grad():
         all_labels.extend(labels.tolist())
 
 print("\n" + "=" * 50)
-print("分类报告")
+print("classification report")
 print("=" * 50)
 print(classification_report(all_labels, all_preds, target_names=class_names))
 
@@ -143,14 +143,14 @@ plt.xlabel('Predicted Label')
 plt.ylabel('True Label')
 plt.tight_layout()
 plt.savefig(r'C:\trian\model\output\confusion_matrix.png', dpi=150)
-print("\n✅ 混淆矩阵已保存到 output/confusion_matrix.png")
+print("\nsaved to output/confusion_matrix.png")
 
-# -------------------- 7. 保存模型 --------------------
+# save model
 os.makedirs(r'C:\trian\model\output', exist_ok=True)
 torch.save(model.state_dict(), r'C:\trian\model\output\plant_model.pth')
-print("💾 模型已保存到 output/plant_model.pth")
+print("saved to output/plant_model.pth")
 
-# -------------------- 8. 画训练曲线 --------------------
+# training curves
 plt.figure(figsize=(12, 5))
 
 plt.subplot(1, 2, 1)
@@ -167,5 +167,5 @@ plt.title('Validation Accuracy Curve')
 
 plt.tight_layout()
 plt.savefig(r'C:\trian\model\output\training_curve.png', dpi=150)
-print("📈 训练曲线已保存到 output/training_curve.png")
+print("saved to output/training_curve.png")
 plt.show()
