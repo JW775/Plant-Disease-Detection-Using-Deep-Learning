@@ -1,176 +1,1029 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plant Disease Detection</title>
+    <title>🌾 农作物病害智能识别系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
+        :root {
+            --primary: #2d8a4e;
+            --primary-light: #4caf50;
+            --primary-dark: #1b5e20;
+            --accent: #ff9800;
+            --danger: #e53935;
+            --bg-start: #e8f5e9;
+            --bg-end: #f1f8e9;
+            --card-bg: rgba(255, 255, 255, 0.92);
+            --text-primary: #1b3a1b;
+            --text-secondary: #5a7d5a;
+            --shadow: 0 8px 40px rgba(0, 0, 0, 0.10);
+            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.15);
+            --radius: 24px;
+            --radius-sm: 14px;
+            --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { box-sizing: border-box; }
+
         body {
-            background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             min-height: 100vh;
-            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(180deg,
+                #e6f3f0 0%, #dceeeb 15%, #e8f4f1 30%,
+                #eef7f5 45%, #e0f0ec 60%, #e8f4f1 75%,
+                #ecf6f3 100%);
+            background-attachment: fixed;
+            background-size: 100% 300%;
+            animation: waterFlow 15s ease-in-out infinite;
+            position: relative;
+            overflow-x: hidden;
         }
-        .card {
+        @keyframes waterFlow {
+            0%,100% { background-position: 0% 0%; }
+            33%  { background-position: 0% 50%; }
+            66%  { background-position: 0% 100%; }
+        }
+
+        /* 水波纹 Canvas */
+        #waterCanvas {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+        }
+
+        /* 浮动农作物 — 清澈可见 */
+        .crop-float {
+            position: fixed; pointer-events: none; z-index: 1;
+            opacity: 0;
+            animation: cropSwim 14s ease-in-out infinite;
+            text-shadow: 0 0 12px rgba(255,255,255,0.5);
+        }
+        .crop-float-1 { top: 6%;  left: 4%;  animation-delay: 0s;  font-size: 38px; }
+        .crop-float-2 { top: 22%; right: 5%;  animation-delay: -2s; font-size: 44px; }
+        .crop-float-3 { top: 55%; left: 3%;  animation-delay: -5s; font-size: 34px; }
+        .crop-float-4 { top: 40%; right: 4%;  animation-delay: -8s; font-size: 48px; }
+        .crop-float-5 { bottom: 22%; left: 8%; animation-delay: -10s; font-size: 40px; }
+        .crop-float-6 { bottom: 10%; right: 6%; animation-delay: -12s; font-size: 36px; }
+        .crop-float-7 { top: 72%; right: 10%; animation-delay: -3s; font-size: 32px; }
+        .crop-float-8 { top: 15%; left: 20%; animation-delay: -7s; font-size: 30px; }
+
+        @keyframes cropSwim {
+            0%   { opacity: 0.22; transform: translate(0,0) rotate(0deg); }
+            15%  { opacity: 0.28; transform: translate(18px,-8px) rotate(4deg); }
+            35%  { opacity: 0.32; transform: translate(32px,-18px) rotate(8deg); }
+            50%  { opacity: 0.25; transform: translate(15px,-25px) rotate(5deg); }
+            65%  { opacity: 0.30; transform: translate(-10px,-14px) rotate(-3deg); }
+            80%  { opacity: 0.26; transform: translate(-25px,-6px) rotate(-7deg); }
+            95%  { opacity: 0.22; transform: translate(-8px,2px) rotate(-2deg); }
+            100% { opacity: 0.22; transform: translate(0,0) rotate(0deg); }
+        }
+
+        /* 柔和光斑 */
+        .bg-circle {
+            position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
+        }
+        .bg-circle-1 {
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(160,210,200,0.08) 0%, transparent 65%);
+            top: -150px; right: -100px;
+        }
+        .bg-circle-2 {
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(180,220,210,0.06) 0%, transparent 60%);
+            bottom: -100px; left: -80px;
+        }
+
+        /* 主容器 */
+        .main-wrapper {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 16px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 580px;
+        }
+
+        /* 顶部标题 */
+        .app-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .app-header .logo-icon {
+            display: inline-block;
+            width: 64px;
+            height: 64px;
+            line-height: 64px;
+            font-size: 36px;
+            background: linear-gradient(135deg, #2e7d32, #4caf50);
             border-radius: 20px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-            border: none;
+            color: white;
+            margin-bottom: 12px;
+            box-shadow: 0 8px 25px rgba(46,125,50,0.25);
+            animation: logoPulse 3s ease-in-out infinite;
+        }
+        @keyframes logoPulse {
+            0%, 100% { box-shadow: 0 8px 25px rgba(46,125,50,0.25); }
+            50% { box-shadow: 0 8px 40px rgba(46,125,50,0.45); }
+        }
+        .app-header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1b5e20, #2e7d32);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+        }
+        .app-header .subtitle {
+            font-size: 0.9rem;
+            color: #689f63;
+            font-weight: 500;
+            letter-spacing: 2px;
+        }
+
+        /* 步骤指示器 */
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        .step-dot {
+            width: 40px;
+            height: 4px;
+            border-radius: 2px;
+            background: #c8e6c9;
+            transition: var(--transition);
+        }
+        .step-dot.active {
+            background: var(--primary-light);
+            width: 50px;
+        }
+        .step-dot.done {
+            background: var(--primary);
+        }
+
+        /* 卡片 */
+        .main-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255,255,255,0.6);
             overflow: hidden;
+            transition: var(--transition);
         }
-        .card-header {
-            background: linear-gradient(to right, #2e7d32, #4caf50);
+        .main-card:hover {
+            box-shadow: var(--shadow-lg);
         }
-        #preview {
+        .card-inner {
+            padding: 36px 32px;
+        }
+        @media (max-width: 500px) {
+            .card-inner { padding: 24px 18px; }
+        }
+
+        /* 步骤面板 */
+        .step-panel { display: none; }
+        .step-panel.active { display: block; animation: fadeSlideIn 0.45s ease; }
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .step-title i {
+            color: var(--primary-light);
+            font-size: 1.2rem;
+        }
+
+        /* 搜索输入框 */
+        .search-box {
+            position: relative;
+            margin-bottom: 16px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 14px 18px 14px 48px;
+            border: 2px solid #e0e0e0;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            transition: var(--transition);
+            background: #fafafa;
+            outline: none;
+        }
+        .search-box input:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 4px rgba(76,175,80,0.1);
+            background: #fff;
+        }
+        .search-box i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+            font-size: 1rem;
+        }
+
+        /* 作物选择网格 */
+        .crop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
             max-height: 320px;
-            object-fit: cover;
-            border-radius: 12px;
-            display: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            padding-right: 4px;
         }
-        .loading-spinner {
-            display: none;
+        .crop-grid::-webkit-scrollbar { width: 5px; }
+        .crop-grid::-webkit-scrollbar-thumb { background: #c8e6c9; border-radius: 10px; }
+
+        .crop-option {
+            padding: 14px 10px;
+            border: 2px solid #e8f0e8;
+            border-radius: var(--radius-sm);
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background: #fafffa;
+            user-select: none;
         }
-        .btn-success {
-            padding: 12px;
-            border-radius: 12px;
+        .crop-option:hover {
+            border-color: #a5d6a7;
+            background: #f1f8e9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+        .crop-option.selected {
+            border-color: var(--primary-light);
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            box-shadow: 0 4px 15px rgba(46,125,50,0.15);
+            font-weight: 700;
+        }
+        .crop-option .crop-icon {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .crop-option .crop-name {
+            font-size: 0.85rem;
+            color: var(--text-primary);
             font-weight: 600;
         }
-        .form-control {
-            border-radius: 10px;
-            padding: 10px 14px;
+
+        /* 上传区域 */
+        .upload-zone {
+            border: 2px dashed #c8e6c9;
+            border-radius: var(--radius-sm);
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background: #fafffa;
+            position: relative;
+            overflow: hidden;
         }
-        .tip-box {
+        .upload-zone:hover, .upload-zone.drag-over {
+            border-color: var(--primary-light);
+            background: #f1f8e9;
+            box-shadow: inset 0 0 0 4px rgba(76,175,80,0.05);
+        }
+        .upload-zone i {
+            font-size: 3rem;
+            color: #a5d6a7;
+            display: block;
+            margin-bottom: 12px;
+            transition: var(--transition);
+        }
+        .upload-zone:hover i { color: var(--primary-light); transform: translateY(-4px); }
+        .upload-zone .upload-text {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+        .upload-zone .upload-hint {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        /* 图片预览 */
+        .preview-container {
+            position: relative;
+            display: none;
+            margin-top: 16px;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .preview-container img {
+            width: 100%;
+            max-height: 280px;
+            object-fit: cover;
+            display: block;
+        }
+        .preview-overlay {
+            position: absolute;
+            top: 10px; right: 10px;
+        }
+        .preview-overlay button {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255,255,255,0.9);
+            color: #666;
+            cursor: pointer;
             font-size: 0.85rem;
-            color: #555;
+            transition: var(--transition);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
-        .alert-danger {
-            border-radius: 10px;
+        .preview-overlay button:hover { background: #fff; color: var(--danger); }
+
+        /* 选中作物标签 */
+        .selected-crop-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            border-radius: 50px;
+            font-weight: 600;
+            color: var(--primary-dark);
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+            border: 1px solid #a5d6a7;
+        }
+        .selected-crop-tag .change-btn {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            padding: 2px 6px;
+            font-size: 0.8rem;
+            transition: var(--transition);
+        }
+        .selected-crop-tag .change-btn:hover { color: var(--danger); }
+
+        /* 按钮 */
+        .btn-primary-custom {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            background: linear-gradient(135deg, #2e7d32, #4caf50);
+            color: white;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(46,125,50,0.35);
+        }
+        .btn-primary-custom:active { transform: translateY(0); }
+        .btn-primary-custom:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-outline-custom {
+            width: 100%;
+            padding: 13px;
+            border: 2px solid #c8e6c9;
+            border-radius: var(--radius-sm);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            background: transparent;
+            color: var(--text-primary);
+        }
+        .btn-outline-custom:hover {
+            border-color: var(--primary-light);
+            background: #f1f8e9;
+        }
+
+        /* 加载动画 */
+        .loading-overlay {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .loading-overlay.active { display: block; animation: fadeSlideIn 0.3s ease; }
+
+        .loader-ring {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+        .loader-ring .ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            animation: ringSpin 1.5s linear infinite;
+        }
+        .loader-ring .ring:nth-child(1) {
+            width: 100%; height: 100%;
+            border-top-color: #4caf50;
+        }
+        .loader-ring .ring:nth-child(2) {
+            width: 70%; height: 70%;
+            top: 15%; left: 15%;
+            border-right-color: #8bc34a;
+            animation-direction: reverse;
+            animation-duration: 1.2s;
+        }
+        .loader-ring .ring:nth-child(3) {
+            width: 40%; height: 40%;
+            top: 30%; left: 30%;
+            border-bottom-color: #2e7d32;
+            animation-duration: 0.9s;
+        }
+        @keyframes ringSpin {
+            to { transform: rotate(360deg); }
+        }
+        .loading-text {
+            color: var(--text-secondary);
+            font-weight: 500;
+            animation: dotPulse 1.5s ease-in-out infinite;
+        }
+        @keyframes dotPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* 结果区域 */
+        .result-container {
+            display: none;
+            animation: fadeSlideIn 0.5s ease;
+        }
+        .result-container.active { display: block; }
+
+        .result-card {
+            background: linear-gradient(135deg, #ffffff, #f9fdf9);
+            border-radius: var(--radius-sm);
+            padding: 28px 24px;
+            text-align: center;
+            border: 1px solid #e0e8e0;
+        }
+
+        .result-icon {
+            font-size: 4rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+        .result-icon.healthy { animation: bounce 0.6s ease; }
+        .result-icon.diseased { animation: shake 0.6s ease; }
+
+        .disease-name {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .disease-name.healthy { color: #2e7d32; }
+        .disease-name.diseased { color: #e65100; }
+
+        .crop-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 50px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+
+        /* 治疗建议 */
+        .treatment-box {
+            margin-top: 20px;
+            text-align: left;
+            background: #fffdf5;
+            border-left: 4px solid #ff9800;
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            padding: 18px 20px;
+        }
+        .treatment-box h6 {
+            font-weight: 700;
+            color: #e65100;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        .treatment-box ul {
+            margin: 0;
+            padding-left: 18px;
+            color: #666;
+            font-size: 0.88rem;
+            line-height: 1.8;
+        }
+
+        /* 底部 */
+        .app-footer {
+            text-align: center;
+            margin-top: 28px;
+            color: #a0b8a0;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        /* Toast */
+        .custom-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-weight: 600;
+            color: white;
+            font-size: 0.9rem;
+            animation: toastIn 0.4s ease, toastOut 0.4s ease 2.8s forwards;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }
+        .custom-toast.warning { background: #ff9800; }
+        .custom-toast.error { background: #e53935; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-30px); } }
+        @keyframes toastOut { to { opacity: 0; transform: translateX(-50%) translateY(-30px); } }
+
+        /* 隐藏的文件输入 */
+        #imageFile { display: none; }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .crop-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+            .app-header h1 { font-size: 1.4rem; }
+            .card-inner { padding: 24px 16px; }
         }
     </style>
 </head>
 <body>
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-7 col-lg-6">
-            <div class="card">
-                <div class="card-header text-white text-center py-4">
-                    <h3 class="mb-0 fw-bold">🌿 Plant Disease Detection</h3>
-                    <p class="small opacity-75 mb-0">AI-powered Leaf Health Analysis</p>
+<!-- 水波纹 Canvas -->
+<canvas id="waterCanvas"></canvas>
+
+<!-- 柔和光斑 -->
+<div class="bg-circle bg-circle-1"></div>
+<div class="bg-circle bg-circle-2"></div>
+
+<!-- 清澈可见的农作物 -->
+<div class="crop-float crop-float-1">🌾</div>
+<div class="crop-float crop-float-2">🍎</div>
+<div class="crop-float crop-float-3">🍃</div>
+<div class="crop-float crop-float-4">🌽</div>
+<div class="crop-float crop-float-5">🍅</div>
+<div class="crop-float crop-float-6">🍇</div>
+<div class="crop-float crop-float-7">🌱</div>
+<div class="crop-float crop-float-8">🍊</div>
+
+<!-- Toast容器 -->
+<div id="toastContainer"></div>
+
+<!-- 主布局 -->
+<div class="main-wrapper">
+    <div class="app-container">
+
+        <!-- 标题 -->
+        <div class="app-header">
+            <div class="logo-icon">🌾</div>
+            <h1>农作物病害智能识别</h1>
+            <p class="subtitle">AI-POWERED CROP DISEASE DETECTION</p>
+        </div>
+
+        <!-- 步骤指示器 -->
+        <div class="step-indicator">
+            <div class="step-dot active" id="stepDot1"></div>
+            <div class="step-dot" id="stepDot2"></div>
+            <div class="step-dot" id="stepDot3"></div>
+        </div>
+
+        <!-- 主卡片 -->
+        <div class="main-card">
+            <div class="card-inner">
+
+                <!-- 步骤1: 选择作物 -->
+                <div class="step-panel active" id="step1">
+                    <div class="step-title">
+                        <i class="fa-solid fa-seedling"></i> 第1步：选择农作物
+                    </div>
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="cropSearch" placeholder="搜索农作物名称...">
+                    </div>
+                    <div class="crop-grid" id="cropGrid">
+                        <!-- 动态填充 -->
+                    </div>
+                    <button class="btn-primary-custom mt-3" id="btnNextStep" disabled>
+                        下一步 <i class="fa-solid fa-arrow-right"></i>
+                    </button>
                 </div>
 
-                <div class="card-body p-5">
-                    <form id="uploadForm">
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">Upload Leaf Image</label>
-                            <input type="file" id="imageFile" class="form-control" accept="image/*" required>
-                            <div class="tip-box mt-2">
-                                ✔ Supported: JPG, PNG, JPEG
-                            </div>
+                <!-- 步骤2: 上传图片 -->
+                <div class="step-panel" id="step2">
+                    <div class="step-title">
+                        <i class="fa-solid fa-camera"></i> 第2步：上传叶片照片
+                    </div>
+                    <div class="selected-crop-tag" id="selectedCropTag">
+                        🌿 <span id="selectedCropName"></span>
+                        <button class="change-btn" id="btnBackStep1"><i class="fa-solid fa-pen"></i></button>
+                    </div>
+                    <div class="upload-zone" id="uploadZone">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <div class="upload-text">点击上传或拖拽图片</div>
+                        <div class="upload-hint">支持 JPG / PNG / JPEG，拍摄清晰叶片照片效果最佳</div>
+                    </div>
+                    <input type="file" id="imageFile" accept="image/*">
+                    <div class="preview-container" id="previewContainer">
+                        <img id="preview" src="" alt="预览">
+                        <div class="preview-overlay">
+                            <button id="btnRemoveImage"><i class="fa-solid fa-xmark"></i></button>
                         </div>
-
-                        <button type="submit" class="btn btn-success w-100 border-0">
-                            Start Detect
-                        </button>
-                    </form>
-
-                    <div class="text-center mt-4">
-                        <img id="preview" class="img-fluid">
                     </div>
-
-                    <div class="loading-spinner text-center mt-4">
-                        <div class="spinner-border text-success"></div>
-                        <p class="mt-2 text-muted">Analyzing image, please wait...</p>
-                    </div>
-
-                    <div id="resultArea" class="mt-5 d-none">
-                        <hr>
-                        <h5 class="text-center text-success fw-semibold">✅ Detection Result</h5>
-                        <div id="resultText" class="alert text-center mt-3 fs-5"></div>
-                    </div>
+                    <button class="btn-primary-custom mt-4" id="btnDetect" disabled>
+                        <i class="fa-solid fa-magnifying-glass-chart"></i> 开始识别
+                    </button>
+                    <button class="btn-outline-custom mt-2" id="btnBackStep1b">
+                        <i class="fa-solid fa-arrow-left"></i> 重新选择作物
+                    </button>
                 </div>
-            </div>
 
-            <div class="text-center mt-4 text-muted small">
-                Plant Disease Detection System | Designed for Course Project
+                <!-- 加载动画 -->
+                <div class="loading-overlay" id="loadingOverlay">
+                    <div class="loader-ring">
+                        <div class="ring"></div>
+                        <div class="ring"></div>
+                        <div class="ring"></div>
+                    </div>
+                    <p class="loading-text">AI 正在分析叶片图像，请稍候...</p>
+                </div>
+
+                <!-- 步骤3: 结果展示 -->
+                <div class="result-container" id="resultContainer">
+                    <div class="step-title">
+                        <i class="fa-solid fa-clipboard-check"></i> 识别结果
+                    </div>
+                    <div class="result-card" id="resultCard">
+                        <!-- 动态填充 -->
+                    </div>
+                    <button class="btn-primary-custom mt-3" id="btnNewDetection">
+                        <i class="fa-solid fa-rotate"></i> 开始新的识别
+                    </button>
+                </div>
+
             </div>
+        </div>
+
+        <!-- 底部 -->
+        <div class="app-footer">
+            🌱 农作物病害智能识别系统 · AI-Powered Plant Disease Detection · 2025
         </div>
     </div>
 </div>
 
 <script>
-    const imageFile = document.getElementById('imageFile');
-    const preview = document.getElementById('preview');
-    const uploadForm = document.getElementById('uploadForm');
-    const loading = document.querySelector('.loading-spinner');
-    const resultArea = document.getElementById('resultArea');
-    const resultText = document.getElementById('resultText');
+    // ==================== 全局状态 ====================
+    const API_BASE = 'http://127.0.0.1:5000';
+    let selectedCrop = null;
+    let selectedFile = null;
+    let allCrops = [];
 
-    // 预览图片功能
-    imageFile.addEventListener('change', function () {
-        const file = imageFile.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                preview.src = e.target.result;
-                preview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
+    // ==================== DOM 元素 ====================
+    const $step1 = document.getElementById('step1');
+    const $step2 = document.getElementById('step2');
+    const $loadingOverlay = document.getElementById('loadingOverlay');
+    const $resultContainer = document.getElementById('resultContainer');
+    const $cropGrid = document.getElementById('cropGrid');
+    const $cropSearch = document.getElementById('cropSearch');
+    const $btnNextStep = document.getElementById('btnNextStep');
+    const $selectedCropName = document.getElementById('selectedCropName');
+    const $uploadZone = document.getElementById('uploadZone');
+    const $imageFile = document.getElementById('imageFile');
+    const $preview = document.getElementById('preview');
+    const $previewContainer = document.getElementById('previewContainer');
+    const $btnDetect = document.getElementById('btnDetect');
+    const $resultCard = document.getElementById('resultCard');
+    const $stepDot1 = document.getElementById('stepDot1');
+    const $stepDot2 = document.getElementById('stepDot2');
+    const $stepDot3 = document.getElementById('stepDot3');
+
+    // ==================== 辅助函数 ====================
+    function showToast(msg, type = 'warning') {
+        const toast = document.createElement('div');
+        toast.className = `custom-toast ${type}`;
+        toast.textContent = msg;
+        document.getElementById('toastContainer').appendChild(toast);
+        setTimeout(() => toast.remove(), 3300);
+    }
+
+    function updateStepDots(step) {
+        [$stepDot1, $stepDot2, $stepDot3].forEach(d => {
+            d.className = 'step-dot';
+        });
+        if (step === 1) $stepDot1.classList.add('active');
+        else if (step === 2) { $stepDot1.classList.add('done'); $stepDot2.classList.add('active'); }
+        else if (step === 3) { $stepDot1.classList.add('done'); $stepDot2.classList.add('done'); $stepDot3.classList.add('active'); }
+    }
+
+    function showPanel(panel) {
+        [$step1, $step2, $loadingOverlay, $resultContainer].forEach(p => {
+            if (p) { p.classList.remove('active'); p.style.display = 'none'; }
+        });
+        if (panel) { panel.classList.add('active'); panel.style.display = ''; }
+    }
+
+    // ==================== 加载作物列表 ====================
+    async function loadCrops() {
+        try {
+            const res = await fetch(`${API_BASE}/api/crops`);
+            const data = await res.json();
+            allCrops = data.crops || [];
+            renderCropGrid(allCrops);
+        } catch (err) {
+            // 使用默认作物列表作为后备
+            allCrops = [
+                { name: '苹果', icon: '🍎', category: '水果' },
+                { name: '番茄', icon: '🍅', category: '蔬菜' },
+                { name: '玉米', icon: '🌽', category: '谷物' },
+                { name: '马铃薯', icon: '🥔', category: '蔬菜' },
+                { name: '葡萄', icon: '🍇', category: '水果' },
+                { name: '水稻', icon: '🌾', category: '谷物' },
+                { name: '小麦', icon: '🌾', category: '谷物' },
+                { name: '南瓜', icon: '🎃', category: '蔬菜' },
+                { name: '草莓', icon: '🍓', category: '水果' },
+                { name: '辣椒', icon: '🌶️', category: '蔬菜' },
+                { name: '柑橘', icon: '🍊', category: '水果' },
+            ];
+            renderCropGrid(allCrops);
         }
+    }
+
+    function renderCropGrid(crops) {
+        $cropGrid.innerHTML = crops.map(c => `
+            <div class="crop-option" data-crop="${c.name}">
+                <span class="crop-icon">${c.icon}</span>
+                <span class="crop-name">${c.name}</span>
+            </div>
+        `).join('');
+
+        // 点击事件
+        $cropGrid.querySelectorAll('.crop-option').forEach(el => {
+            el.addEventListener('click', () => {
+                $cropGrid.querySelectorAll('.crop-option').forEach(e => e.classList.remove('selected'));
+                el.classList.add('selected');
+                selectedCrop = el.dataset.crop;
+                $btnNextStep.disabled = false;
+            });
+        });
+    }
+
+    // 搜索过滤
+    $cropSearch.addEventListener('input', () => {
+        const query = $cropSearch.value.trim().toLowerCase();
+        const filtered = query ? allCrops.filter(c => c.name.toLowerCase().includes(query)) : allCrops;
+        renderCropGrid(filtered);
+        selectedCrop = null;
+        $btnNextStep.disabled = true;
     });
 
-    // 提交表单并调用后端API
-    uploadForm.addEventListener('submit', async function (e) {
+    // ==================== 步骤导航 ====================
+    $btnNextStep.addEventListener('click', () => {
+        if (!selectedCrop) return;
+        $selectedCropName.textContent = selectedCrop;
+        showPanel($step2);
+        updateStepDots(2);
+    });
+
+    document.getElementById('btnBackStep1').addEventListener('click', () => {
+        showPanel($step1);
+        updateStepDots(1);
+    });
+    document.getElementById('btnBackStep1b').addEventListener('click', () => {
+        showPanel($step1);
+        updateStepDots(1);
+    });
+
+    document.getElementById('btnNewDetection').addEventListener('click', () => {
+        resetAll();
+        showPanel($step1);
+        updateStepDots(1);
+    });
+
+    function resetAll() {
+        selectedCrop = null;
+        selectedFile = null;
+        $imageFile.value = '';
+        $preview.src = '';
+        $previewContainer.style.display = 'none';
+        $btnDetect.disabled = true;
+        $btnNextStep.disabled = true;
+        $cropGrid.querySelectorAll('.crop-option').forEach(e => e.classList.remove('selected'));
+        $cropSearch.value = '';
+        renderCropGrid(allCrops);
+        $resultContainer.classList.remove('active');
+        $resultContainer.style.display = 'none';
+        $loadingOverlay.classList.remove('active');
+        $loadingOverlay.style.display = 'none';
+    }
+
+    // ==================== 图片上传 ====================
+    $uploadZone.addEventListener('click', () => $imageFile.click());
+    $uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); $uploadZone.classList.add('drag-over'); });
+    $uploadZone.addEventListener('dragleave', () => $uploadZone.classList.remove('drag-over'));
+    $uploadZone.addEventListener('drop', (e) => {
         e.preventDefault();
-        
-        // 检查是否选择了文件
-        if (!imageFile.files[0]) {
-            alert('请先选择要上传的图片！');
+        $uploadZone.classList.remove('drag-over');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) handleFile(file);
+        else showToast('请上传图片文件！', 'error');
+    });
+
+    $imageFile.addEventListener('change', () => {
+        const file = $imageFile.files[0];
+        if (file) handleFile(file);
+    });
+
+    function handleFile(file) {
+        selectedFile = file;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            $preview.src = e.target.result;
+            $previewContainer.style.display = 'block';
+            $btnDetect.disabled = false;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    document.getElementById('btnRemoveImage').addEventListener('click', () => {
+        selectedFile = null;
+        $imageFile.value = '';
+        $preview.src = '';
+        $previewContainer.style.display = 'none';
+        $btnDetect.disabled = true;
+    });
+
+    // ==================== 识别请求 ====================
+    $btnDetect.addEventListener('click', async () => {
+        if (!selectedCrop || !selectedFile) {
+            showToast('请先选择作物并上传图片！', 'warning');
             return;
         }
 
-        // 显示加载状态
-        loading.style.display = 'block';
-        resultArea.classList.add('d-none');
-        
-        try {
-            // 创建FormData对象
-            const formData = new FormData();
-            formData.append('image', imageFile.files[0]);
+        // 显示加载动画
+        [$step1, $step2, $resultContainer].forEach(p => {
+            if (p) { p.classList.remove('active'); p.style.display = 'none'; }
+        });
+        $loadingOverlay.classList.add('active');
+        $loadingOverlay.style.display = '';
+        updateStepDots(2);
 
-            // 调用后端API
-            const response = await fetch('http://127.0.0.1:5000/detect', {
+        try {
+            const formData = new FormData();
+            formData.append('image', selectedFile);
+            formData.append('crop', selectedCrop);
+
+            const response = await fetch(`${API_BASE}/api/detect`, {
                 method: 'POST',
                 body: formData
             });
 
-            // 解析响应
             const data = await response.json();
-            
-            // 隐藏加载状态
-            loading.style.display = 'none';
-            
+
+            // 隐藏加载
+            $loadingOverlay.classList.remove('active');
+            $loadingOverlay.style.display = 'none';
+
             if (response.ok) {
-                // 显示成功结果
-                resultArea.classList.remove('d-none');
-                resultText.className = 'alert alert-success text-center mt-3 fs-5';
-                resultText.textContent = data.result;
+                showResult(data);
+                updateStepDots(3);
             } else {
-                // 显示错误信息
-                resultArea.classList.remove('d-none');
-                resultText.className = 'alert alert-danger text-center mt-3 fs-5';
-                resultText.textContent = `错误: ${data.error}`;
+                showToast(`识别失败: ${data.error || '未知错误'}`, 'error');
+                showPanel($step2);
+                updateStepDots(2);
             }
         } catch (error) {
-            // 处理网络错误
-            loading.style.display = 'none';
-            resultArea.classList.remove('d-none');
-            resultText.className = 'alert alert-danger text-center mt-3 fs-5';
-            resultText.textContent = `连接错误: 无法连接到服务器 (${error.message})`;
-            console.error('Error:', error);
+            $loadingOverlay.classList.remove('active');
+            $loadingOverlay.style.display = 'none';
+            showToast(`网络错误: 无法连接到服务器 (${error.message})`, 'error');
+            showPanel($step2);
+            updateStepDots(2);
         }
     });
-</script>
 
+    // ==================== 结果展示 ====================
+    function showResult(data) {
+        const { disease, crop, is_healthy, treatments, low_confidence, warning } = data;
+        const isHealthy = is_healthy || disease.includes('健康') || disease.includes('Healthy');
+
+        let icon, nameClass;
+        if (isHealthy) {
+            icon = '✅';
+            nameClass = 'healthy';
+        } else {
+            icon = '⚠️';
+            nameClass = 'diseased';
+        }
+
+        let treatmentHTML = '';
+        if (treatments && treatments.length > 0) {
+            treatmentHTML = `
+                <div class="treatment-box">
+                    <h6><i class="fa-solid fa-kit-medical"></i> 防治建议</h6>
+                    <ul>${treatments.map(t => `<li>${t}</li>`).join('')}</ul>
+                </div>
+            `;
+        }
+
+        const warningHTML = low_confidence && warning ? `
+            <div class="alert alert-warning mt-3 mb-0" style="font-size:0.86rem;text-align:left;">
+                <i class="fa-solid fa-triangle-exclamation"></i> ${warning}
+            </div>
+        ` : '';
+
+        $resultCard.innerHTML = `
+            <span class="result-icon ${isHealthy ? 'healthy' : 'diseased'}">${icon}</span>
+            <div class="disease-name ${nameClass}">${disease}</div>
+            <div class="crop-badge">${crop}</div>
+            ${warningHTML}
+            ${treatmentHTML}
+        `;
+
+        $resultContainer.classList.add('active');
+        $resultContainer.style.display = '';
+    }
+
+    // ==================== 水波纹效果 ====================
+    (function() {
+        const canvas = document.getElementById('waterCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+
+        let w, h;
+        function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+        resize();
+        window.addEventListener('resize', resize);
+
+        const waves = [];
+        const MAX = 5;
+        for (let i = 0; i < MAX; i++) {
+            waves.push({
+                y: h * (0.1 + i * 0.18),
+                amp: 15 + Math.random() * 20,
+                freq: 0.003 + Math.random() * 0.004,
+                speed: 0.3 + Math.random() * 0.5,
+                phase: Math.random() * Math.PI * 2,
+                opacity: 0.03 + Math.random() * 0.03,
+            });
+        }
+
+        let time = 0;
+        function animate() {
+            time += 0.008;
+            ctx.clearRect(0, 0, w, h);
+
+            waves.forEach(wa => {
+                ctx.beginPath();
+                ctx.moveTo(0, wa.y);
+                for (let x = 0; x <= w; x += 3) {
+                    const dy = Math.sin(x * wa.freq + time * wa.speed + wa.phase) * wa.amp;
+                    ctx.lineTo(x, wa.y + dy);
+                }
+                ctx.strokeStyle = `rgba(120,190,170,${wa.opacity})`;
+                ctx.lineWidth = 1.2;
+                ctx.stroke();
+            });
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+    })();
+
+    // ==================== 初始化 ====================
+    loadCrops();
+</script>
 </body>
 </html>
