@@ -1,3 +1,8 @@
+"""
+File: download_background.py
+Responsible team member: ZhengWang
+Description: Description: A Python script to automatically download 224x224 non-plant background images from the Picsum API to build a negative control class for training and validation splits.
+"""
 import os
 import requests
 import time
