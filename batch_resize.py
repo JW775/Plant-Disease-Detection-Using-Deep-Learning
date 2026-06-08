@@ -1,3 +1,8 @@
+"""
+File: batch_resize.py
+Responsible team member: ZhengWang
+Description: Description: A Python script to batch resize, convert, and preprocess plant dataset images to a standardized 224x224 resolution while preserving the folder structure.
+"""
 import os
 from PIL import Image
 
