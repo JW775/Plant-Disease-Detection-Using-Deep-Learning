@@ -1,6 +1,5 @@
 """
-农作物病害智能识别系统 - Flask 后端
-使用 ResNet 44类分类模型 + 图像分析进行叶片病害检测
+XiaoLeiLuan
 """
 import os
 import io
