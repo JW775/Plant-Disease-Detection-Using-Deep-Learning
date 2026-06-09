@@ -374,16 +374,6 @@ def detect():
                 "reason": "non_crop_image",
             }), 422
 
-        global_best = global_predictions[0]
-        predicted_crop = global_best["crop"]
-        if predicted_crop and predicted_crop != selected_crop:
-            return jsonify({
-                "error": f"The selected crop is {selected_crop}, but the image looks more like {predicted_crop}. Please select the correct crop or upload the correct image.",
-                "reason": "crop_mismatch",
-                "selected_crop": selected_crop,
-                "predicted_crop": predicted_crop,
-            }), 422
-
         crop_predictions = predict_deep(image, top_k=5, allowed_class_ids=allowed_class_ids)
         best = choose_best_crop_prediction(crop_predictions)
         if not best:
