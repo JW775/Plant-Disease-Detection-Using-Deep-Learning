@@ -979,8 +979,6 @@
             <span class="result-icon" style="font-size:4rem;">⚠️</span>
             <div class="disease-name" style="color:#e65100;">Input Not Accepted</div>
             <p style="color:#888;margin-top:8px;">${data.error}</p>
-            ${data.selected_crop ? `<div class="crop-badge">Selected crop: ${data.selected_crop}</div>` : ''}
-            ${data.predicted_crop ? `<div class="crop-badge">Detected crop: ${data.predicted_crop}</div>` : ''}
             <button class="btn-outline-custom mt-3" onclick="document.getElementById('btnBackStep1b').click()">
                 <i class="fa-solid fa-arrow-left"></i> Try Again
             </button>
