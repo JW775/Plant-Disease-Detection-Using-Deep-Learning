@@ -96,8 +96,14 @@ git push origin <feature/data-auhentation-xiaoming>
 
 ---
 ## Start
+1. Copy the index.html file to the desktop.
 
+2. After copying, open the index.html file in the browser.
 
+3. you can start the application
+```commandline
+python app.py
+```
 ---
 ## Team Nembers
 - JiaYi Wu: Documentation and Testing
