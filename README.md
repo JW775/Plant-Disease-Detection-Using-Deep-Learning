@@ -45,32 +45,20 @@ python app.py
 ---
 ## Project Structure
 ```plaintext
-|--- data/						# Dataset storage 
-|	|--- train/					# Training set ( classified by folder )
-|	|--- val/					# Validation set
-|	|--- test/					# Test set
+|--- data/						
+|	|--- batch_resize/					
+|	|--- download_background/					
+|	|--- simple_balanced_dataset/					
 |
-|--- models/					# Trained model weights ( .pth files )
-|	|--- best_model.pth	        
-|	
-|--- static/					# Static files for Web application ( for Flask )
-|	|--- images/				# Temporarily uploaded images by users
-|	|--- cas/ 					# Style sheets
+|--- best_model.pth				# Trained model weights ( .pth files )
 |
-|--- templates/					# HTML web templates ( for Flask )
-|	|--- index.html 			# Homepage
-|	|--- result.html			# Result display page
-|	
-|--- src/						# Core source code directory
-|	|--- __init__.py			
-|	|--- dataset.py				# Data loading and preprocessing ( Dataset & Dataloader )
-|	|--- model.py				# Model definition ( ResNet18, etc. )
-|	|--- train.py				# Training script
-|	|--- utils.py				# Utility functions (plotting, accuracy calculation, etc. )
-|
+|--- index.html					# HTML web templates ( for Flask )
+|	                 			# Homepage
+|	                			# Result display page
+|--- model.py					# Model definition ( ResNet18, etc. )/						# Core source code directory
+|--- model_training.py			# Training script
 |---.gitignore					# Git ignore file configuration
 |--- app.py						# Flask Web application entry
-|--- predict.py					# Single image prediction script ( for command line )
 |--- README.md					# Project description document
 |--- requiremeents.txt			# Dependencies list ( pip freeze > requirements.txt )
 |--- LICENSE					# Open source license
@@ -107,7 +95,11 @@ git push origin <feature/data-auhentation-xiaoming>
 - You need to go to the GitHub webpage and click **"Compare & pull request"**.
 
 ---
-Team Nembers
+## Start
+
+
+---
+## Team Nembers
 - JiaYi Wu: Documentation and Testing
 - XiaoLei Luan: Web application Development (Backend Development)
 - YiXuan Liu: Interface Design (Frontend Development)
