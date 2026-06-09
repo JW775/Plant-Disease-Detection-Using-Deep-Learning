@@ -7,17 +7,37 @@ import copy
 import time
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 
+# from model import ResNet18 # 导入模型
+# from model import Residual
 
 # 导入官方的 ResNet18 模型
 from torchvision import models
+
+"""
+    Team Member: JiaYi Wu
+    Description: Model Training,
+    
+    Data Loading & Augmentation:Loads the local plant dataset and applies various data augmentations (e.g., random crop, flip, color jitter) 
+    to the training set to prevent overfitting, while applying only basic resizing to the validation set.
+    
+    Model Setup & Transfer Learning: Loads the official ImageNet-pretrained ResNet18 model. Employs a freezing strategy: freezes the backbone network, 
+    unfreezes only Layer4 and the FC layer, and replaces the FC layer with a custom number of classes for fine-tuning.
+    
+    Training Pipeline & Strategy: Trains for 30 epochs using the Adam optimizer and a Cosine Annealing learning rate scheduler. After each epoch,
+     it calculates and logs the loss and accuracy for both sets, and automatically saves the model weights that achieve the highest validation accuracy.
+    
+    Result Visualization: After training, uses Matplotlib to plot the line charts of Loss and Accuracy over epochs, providing an intuitive view of the model's convergence.
+"""
 
 
 # ---加载数据集---
 
 # 处理训练集和验证集数据
+# Data Loading & Augmentation
 def train_val_data_process():
-    data_dir = 'D:/develop/plant/dataset'
+    data_dir = 'D:/develop/pythonProjects/plant/dataset'
     # 数据预处理
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
@@ -216,12 +236,12 @@ def train_model_process(model, train_dataloader, val_dataloader, num_epoches):
 
         # 训练耗费时间
         time_use = time.time() - since
-        print(f"训练耗费时间: {(time_use//60):.0f}m {time_use%60:.0f}s")
+        print(f"训练耗费时间: {(time_use//60):.0f}m {(time_use%60):.0f}s")
         print("-" * 20)
 
     # 选择最优参数
     # 加载最高准确度下的模型参数
-    torch.save(best_model_wts, "D:/develop/Plant/best_model_process.pth")
+    torch.save(best_model_wts, "D:/develop/pythonProjects/Plant/best_model_process.pth")
 
 
 
@@ -236,6 +256,7 @@ def train_model_process(model, train_dataloader, val_dataloader, num_epoches):
 
 
 # 画图
+# Result Visualization
 def matplot_acc_loss(train_process):
     # 创建画布
     plt.figure(figsize=(12,4))
@@ -283,14 +304,14 @@ if __name__ == "__main__":
     # 遍历 3: 解冻FC层
     for param in model.fc.parameters():
         param.requires_grad = True
-    # 替换最后一层分类头（44分类）
+    # 替换最后一层分类头（44分类 + Non-Plant）
     model.fc = nn.Linear(model.fc.in_features, num_classes)
 
     # 把模型放到设备（GPU）
     model = model.to(device)
 
     # 开始训练
-    train_process = train_model_process(model, train_dataloader, val_dataloader, 50)
+    train_process = train_model_process(model, train_dataloader, val_dataloader, 30)
     matplot_acc_loss(train_process)
     # ======================================================================
     # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

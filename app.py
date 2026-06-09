@@ -16,7 +16,7 @@ from flask_cors import CORS
 from PIL import Image
 from torchvision import transforms
 from torchvision.models import resnet18
-
+from typing import Optional, Union
 
 # ==================== Configuration ====================
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")

@@ -1,4 +1,7 @@
-
+"""
+    Team member: JiaYi Wu
+    Description: Define the pre-trained model - ResNet18
+"""
 import torchvision.models as models
 import torch.nn as nn
 
