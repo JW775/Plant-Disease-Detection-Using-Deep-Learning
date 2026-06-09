@@ -1,8 +1,5 @@
 """
-Crop disease detection backend.
-
-This backend uses Flask for APIs and a torchvision ResNet18 model for
-45-class inference: 44 crop disease/healthy classes plus one background class.
+XiaoleiLuan
 """
 import io
 import json
