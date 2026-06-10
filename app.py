@@ -20,8 +20,10 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger(__name__)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# ----------------your practical path--------------------------
 CLASS_INDICES_PATH = r"D:\tmp\plant_disease_backend\class_indices.json"
 MODEL_PATH = os.path.join(BASE_DIR, "best_model_process.pth")
+# ----------------your practical path--------------------------
 IMG_SIZE = 224
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

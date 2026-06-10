@@ -196,7 +196,7 @@ cython_debug/
 
 # Cursor
 #  Cursor is an AI-powered code editor. `.cursorignore` specifies files/directories to
-#  exclude from AI features like autocomplete and code analysis. Recommended for sensitive data
+#  exclude from AI features like autocomplete and code analysis. Recommended for sensitive data_new
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
@@ -209,14 +209,13 @@ __marimo__/
 #Deep Learning
 *.h5
 *.pt
-*.pth
 *.ckpt
 model/
 logs/
 tb_logs/ # Tensorboard logs
 
 
-#data -> ignore only the files, preserving the folder struture
+#data_new -> ignore only the files, preserving the folder struture
 data/
 dataset/
 

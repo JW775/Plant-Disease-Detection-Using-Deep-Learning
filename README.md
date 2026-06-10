@@ -50,17 +50,17 @@ python app.py
 |	|--- download_background/					
 |	|--- simple_balanced_dataset/					
 |
-|--- best_model.pth				# Trained model weights ( .pth files )
+|--- best_model_process.pth		        # Trained model weights ( .pth files )
 |
 |--- index.html					# HTML web templates ( for Flask )
 |	                 			# Homepage
 |	                			# Result display page
 |--- model.py					# Model definition ( ResNet18, etc. )/						# Core source code directory
-|--- model_training.py			# Training script
+|--- model_training.py			        # Training script
 |---.gitignore					# Git ignore file configuration
-|--- app.py						# Flask Web application entry
+|--- app.py					# Flask Web application entry
 |--- README.md					# Project description document
-|--- requiremeents.txt			# Dependencies list ( pip freeze > requirements.txt )
+|--- requiremeents.txt			        # Dependencies list ( pip freeze > requirements.txt )
 |--- LICENSE					# Open source license
 
 
@@ -74,7 +74,7 @@ cd Plant-Disease-Detection-Using-Deep-Learning
 2. Create and switch to your branch
 - Never modify code directly on the main branch!
 ```bash
-git checkout -b -feature/data-augmentation-xiaoming (eg.)
+git checkout -b -feature/data_new-augmentation-xiaoming (eg.)
 ```
 3. Start work and Save changes
 ```bash
@@ -89,7 +89,7 @@ git commit -m <What you changes>
 ```
 4. Push to remote
 ```bash
-git push origin <feature/data-auhentation-xiaoming>
+git push origin <feature/data_new-auhentation-xiaoming>
 ```
 5. Create a pull request
 - You need to go to the GitHub webpage and click **"Compare & pull request"**.

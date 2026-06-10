@@ -19,7 +19,7 @@ from torchvision import models
     Team Member: JiaYi Wu
     Description: Model Training,
     
-    Data Loading & Augmentation:Loads the local plant dataset and applies various data augmentations (e.g., random crop, flip, color jitter) 
+    Data Loading & Augmentation:Loads the local plant dataset and applies various data_new augmentations (e.g., random crop, flip, color jitter) 
     to the training set to prevent overfitting, while applying only basic resizing to the validation set.
     
     Model Setup & Transfer Learning: Loads the official ImageNet-pretrained ResNet18 model. Employs a freezing strategy: freezes the backbone network, 
